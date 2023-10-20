@@ -1,0 +1,114 @@
+{
+  "name": "kafka_topic_partitions_out_of_sync_incident",
+  "description": "In this type of incident, the partitions of a Kafka topic become out of sync, which means that some of the messages are not being delivered to the intended consumers. This can happen due to various reasons, such as a network issue, a hardware failure, or a bug in the Kafka software. The consequences of this incident can be serious, as it can cause data loss, message duplication, or other errors in the downstream systems that depend on the Kafka topic. Therefore, it is important to identify and resolve the root cause of the partition sync issue as soon as possible to ensure the reliability and consistency of the data pipeline.",
+  "params": [
+    {
+      "name": "PATH_TO_KAFKA_HOME",
+      "value": ""
+    },
+    {
+      "name": "ZOOKEEPER_HOST",
+      "value": ""
+    },
+    {
+      "name": "TOPIC_NAME",
+      "value": ""
+    },
+    {
+      "name": "PARTITION_COUNT",
+      "value": ""
+    },
+    {
+      "name": "NAME_OF_TOPIC",
+      "value": ""
+    },
+    {
+      "name": "REPLICATION_FACTOR",
+      "value": ""
+    },
+    {
+      "name": "ZOOKEEPER_PORT",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Kafka Topic Partitions Out of Sync Incident\nIn this type of incident, the partitions of a Kafka topic become out of sync, which means that some of the messages are not being delivered to the intended consumers. This can happen due to various reasons, such as a network issue, a hardware failure, or a bug in the Kafka software. The consequences of this incident can be serious, as it can cause data loss, message duplication, or other errors in the downstream systems that depend on the Kafka topic. Therefore, it is important to identify and resolve the root cause of the partition sync issue as soon as possible to ensure the reliability and consistency of the data pipeline."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## List all topics in Kafka"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `kafka-topics --list --zookeeper ${ZOOKEEPER_HOST}:${ZOOKEEPER_PORT}`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Describe a specific topic to check if it has multiple partitions"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `kafka-topics --describe --zookeeper ${ZOOKEEPER_HOST}:${ZOOKEEPER_PORT} --topic ${TOPIC_NAME}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if any of the Kafka brokers are down"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `kafka-topics --describe --zookeeper ${ZOOKEEPER_HOST}:${ZOOKEEPER_PORT} --topic ${TOPIC_NAME} | grep -i \"isr:\"`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if there are any under-replicated partitions"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `kafka-topics --describe --zookeeper ${ZOOKEEPER_HOST}:${ZOOKEEPER_PORT} | grep -i \"under-replicated\"`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the topic configuration to ensure that replication and partition counts are correct."
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_kafka_topic_replication($PATH_TO_KAFKA_HOME, $TOPIC_NAME, $PARTITION_COUNT, $NAME_OF_TOPIC, $REPLICATION_FACTOR)"
+    }
+  ]
+}
